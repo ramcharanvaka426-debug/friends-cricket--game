@@ -1,54 +1,117 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Friends Cricket Championship</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Friends Cricket Game</title>
 
     <style>
         body {
-            background: #123d24;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #073b25;
             color: white;
             text-align: center;
-            font-family: Arial;
+        }
+
+        header {
+            background: #062b1b;
             padding: 25px;
         }
 
-        h1 { color: gold; }
+        h1 {
+            color: #ffdb4d;
+        }
 
-        .game-box {
-            background: #205b35;
+        .container {
+            max-width: 750px;
+            margin: 25px auto;
+            padding: 20px;
+        }
+
+        .panel {
+            background: #105b37;
             padding: 25px;
+            margin: 20px 0;
             border-radius: 15px;
-            max-width: 400px;
-            margin: auto;
         }
 
-        input, button {
+        input {
+            display: block;
+            margin: 15px auto;
             padding: 12px;
-            margin: 12px;
+            width: 85%;
+            max-width: 350px;
             border-radius: 8px;
+            border: none;
         }
 
         button {
-            background: gold;
+            background: #ffdb4d;
+            color: #073b25;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
+        }
+
+        button:hover {
+            background: orange;
+        }
+
+        #message {
+            color: #ffdb4d;
             font-weight: bold;
         }
 
-        img {
-            max-width: 150px;
-            border-radius: 10px;
+        #playerList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .player-card {
+            background: #073b25;
+            width: 160px;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .player-card img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffdb4d;
+        }
+
+        .player-card h3 {
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            padding: 20px;
+            color: #dddddd;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>🏏 FRIENDS CRICKET CHAMPIONSHIP</h1>
+<header>
+    <h1>🏏 FRIENDS CRICKET GAME 🏏</h1>
+    <p>Register your player and join the match!</p>
+</header>
 
-    <div class="game-box">
-        <h2>Player Registration</h2>
+<div class="container">
+
+    <div class="panel">
+
+        <h2>👤 Player Registration</h2>
 
         <form id="registrationForm">
 
@@ -59,119 +122,165 @@
                 required
             >
 
-            <br>
-
             <input
                 type="file"
-                id="photo"
+                id="playerPhoto"
                 accept="image/jpeg,image/png,image/webp"
                 required
             >
-
-            <br>
-
-            <img id="preview" hidden>
-
-            <br>
 
             <button type="submit">JOIN MATCH</button>
 
         </form>
 
         <h3 id="message">Register to join the match!</h3>
-        <hr>
 
-<h2>🏏 Registered Players</h2>
-
-<div id="playerList"></div>
     </div>
 
-    <script>
-        const form = document.getElementById("registrationForm");
+    <div class="panel">
+
+        <h2>🏏 Registered Players</h2>
+
+        <h3>
+            Total Players:
+            <span id="playerCount">0</span>
+        </h3>
+
+        <div id="playerList">
+            Loading players...
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    Friends Cricket Game | Play Together 🏆
+</footer>
+
+<script>
+
+    // REGISTER PLAYER
+
+    const form = document.getElementById("registrationForm");
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const name = document.getElementById("playerName").value.trim();
+        const photo = document.getElementById("playerPhoto").files[0];
         const message = document.getElementById("message");
-        const photoInput = document.getElementById("photo");
 
-        photoInput.addEventListener("change", function() {
-            const file = this.files[0];
+        if (!name || !photo) {
+            message.textContent = "Please enter your name and upload a photo.";
+            return;
+        }
 
-            if (file) {
-                document.getElementById("preview").src =
-                    URL.createObjectURL(file);
+        const formData = new FormData();
 
-                document.getElementById("preview").hidden = false;
+        formData.append("name", name);
+        formData.append("photo", photo);
+
+        message.textContent = "Registering...";
+
+        try {
+
+            const response = await fetch("/register", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || data.message || "Registration failed.");
             }
-        });
 
-        form.addEventListener("submit", async function(event) {
-            event.preventDefault();
+            message.textContent = data.message || "Registration successful!";
 
-            const name = document.getElementById("playerName").value.trim();
-            const photo = photoInput.files[0];
+            if (data.player) {
+                form.reset();
+                await loadPlayers();
+            }
 
-            if (!name || !photo) {
-                message.innerText = "Enter your name and select a photo!";
+        } catch(error) {
+
+            message.textContent = "Error: " + error.message;
+
+        }
+
+    });
+
+
+    // DISPLAY REGISTERED PLAYERS
+
+    async function loadPlayers() {
+
+        const playerList = document.getElementById("playerList");
+        const playerCount = document.getElementById("playerCount");
+
+        try {
+
+            const response = await fetch("/players");
+
+            if (!response.ok) {
+                throw new Error("Could not load players.");
+            }
+
+            const data = await response.json();
+
+            playerCount.textContent = data.total_players;
+
+            playerList.replaceChildren();
+
+            if (data.players.length === 0) {
+
+                playerList.textContent = "No players registered yet.";
+
                 return;
             }
 
-            const data = new FormData();
-            data.append("name", name);
-            data.append("photo", photo);
+            data.players.forEach(function(player) {
 
-            message.innerText = "Registering...";
+                const card = document.createElement("div");
+                card.className = "player-card";
 
-            try {
-                const response = await fetch("/register", {
-                    method: "POST",
-                    body: data
-                });
+                const heading = document.createElement("h3");
+                heading.textContent = player.name;
 
-                const result = await response.json();
+                const image = document.createElement("img");
+                image.src = player.photo;
+                image.alt = player.name;
 
-                if (!response.ok) {
-                    throw new Error(result.detail || result.message || "Registration failed");
-                }
+                const type = document.createElement("p");
+                type.textContent = player.type;
 
-                message.innerText =
-                    "🎉 Welcome " + result.player.name +
-                    "! Registration successful. Players: " +
-                    result.total_players;
+                card.appendChild(heading);
+                card.appendChild(image);
+                card.appendChild(type);
 
-                form.reset();
-                document.getElementById("preview").hidden = true;
+                playerList.appendChild(card);
 
-            } catch (error) {
-                message.innerText = "Error: " + error.message;
-            }
-        });
-    </script>
-        // Your existing registration JavaScript is above
+            });
 
-    async function loadPlayers() {
-        const response = await fetch("/players");
-        const data = await response.json();
+        } catch(error) {
 
-        const playerList = document.getElementById("playerList");
+            playerList.textContent = "Unable to load players. Please refresh.";
 
-        playerList.innerHTML = "";
+        }
 
-        data.players.forEach(player => {
-            playerList.innerHTML += `
-                <div>
-                    <h3>${player.name}</h3>
-                    <img src="${player.photo}" width="120">
-                    <p>${player.type}</p>
-                </div>
-            `;
-        });
     }
+
+
+    // LOAD PLAYERS AND REFRESH EVERY 5 SECONDS
 
     loadPlayers();
 
-    </script>
-</body>
-</html>
+    setInterval(loadPlayers, 5000);
+
+</script>
 
 </body>
 </html>
-
 
