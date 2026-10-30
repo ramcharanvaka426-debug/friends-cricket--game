@@ -144,6 +144,32 @@
             }
         });
     </script>
+        // Your existing registration JavaScript is above
+
+    async function loadPlayers() {
+        const response = await fetch("/players");
+        const data = await response.json();
+
+        const playerList = document.getElementById("playerList");
+
+        playerList.innerHTML = "";
+
+        data.players.forEach(player => {
+            playerList.innerHTML += `
+                <div>
+                    <h3>${player.name}</h3>
+                    <img src="${player.photo}" width="120">
+                    <p>${player.type}</p>
+                </div>
+            `;
+        });
+    }
+
+    loadPlayers();
+
+    </script>
+</body>
+</html>
 
 </body>
 </html>
