@@ -1,7 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Friends Cricket Championship</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
         body {
@@ -9,12 +11,10 @@
             color: white;
             text-align: center;
             font-family: Arial;
-            padding: 30px;
+            padding: 25px;
         }
 
-        h1 {
-            color: gold;
-        }
+        h1 { color: gold; }
 
         .game-box {
             background: #205b35;
@@ -26,7 +26,7 @@
 
         input, button {
             padding: 12px;
-            margin: 10px;
+            margin: 12px;
             border-radius: 8px;
         }
 
@@ -34,6 +34,11 @@
             background: gold;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        img {
+            max-width: 150px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -43,43 +48,99 @@
     <h1>🏏 FRIENDS CRICKET CHAMPIONSHIP</h1>
 
     <div class="game-box">
-
         <h2>Player Registration</h2>
 
-        <input id="playerName"
-               placeholder="Enter your name">
+        <form id="registrationForm">
 
-        <br>
+            <input
+                type="text"
+                id="playerName"
+                placeholder="Enter your name"
+                required
+            >
 
-        <input type="file"
-               id="photo"
-               accept="image/*">
+            <br>
 
-        <br>
+            <input
+                type="file"
+                id="photo"
+                accept="image/jpeg,image/png,image/webp"
+                required
+            >
 
-        <button onclick="registerPlayer()">
-            JOIN MATCH
-        </button>
+            <br>
 
-        <h3 id="message"></h3>
+            <img id="preview" hidden>
 
+            <br>
+
+            <button type="submit">JOIN MATCH</button>
+
+        </form>
+
+        <h3 id="message">Register to join the match!</h3>
     </div>
 
     <script>
-        function registerPlayer() {
-            let name = document.getElementById("playerName").value;
-            let photo = document.getElementById("photo").files[0];
+        const form = document.getElementById("registrationForm");
+        const message = document.getElementById("message");
+        const photoInput = document.getElementById("photo");
+
+        photoInput.addEventListener("change", function() {
+            const file = this.files[0];
+
+            if (file) {
+                document.getElementById("preview").src =
+                    URL.createObjectURL(file);
+
+                document.getElementById("preview").hidden = false;
+            }
+        });
+
+        form.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("playerName").value.trim();
+            const photo = photoInput.files[0];
 
             if (!name || !photo) {
-                document.getElementById("message").innerText =
-                    "Enter your name and upload your photo!";
+                message.innerText = "Enter your name and select a photo!";
                 return;
             }
 
-            document.getElementById("message").innerText =
-                "Welcome " + name + "! Registration page is working.";
-        }
+            const data = new FormData();
+            data.append("name", name);
+            data.append("photo", photo);
+
+            message.innerText = "Registering...";
+
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || result.message || "Registration failed");
+                }
+
+                message.innerText =
+                    "🎉 Welcome " + result.player.name +
+                    "! Registration successful. Players: " +
+                    result.total_players;
+
+                form.reset();
+                document.getElementById("preview").hidden = true;
+
+            } catch (error) {
+                message.innerText = "Error: " + error.message;
+            }
+        });
     </script>
 
 </body>
 </html>
+
+
