@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friends Cricket Stadium</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #061c15;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+header {
+    padding: 15px;
+    background: #092d20;
+}
+
+h1 { color: #ffe36b; }
+
+.stadium {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background: linear-gradient(#263b45, #101e29);
+    border: 5px solid #64717a;
+    border-radius: 20px;
+}
+
+.stands {
+    background: repeating-linear-gradient(
+        90deg, #9b3434 0 35px, #e6d4a0 35px 40px,
+        #254d76 40px 75px
+    );
+    height: 45px;
+    border-radius: 50%;
+    margin: 5px 25px 15px;
+}
+
+.ground {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.5;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 12px solid #b9a16c;
+    background:
+      repeating-linear-gradient(25deg,
+      #278b40 0 35px, #319c4a 35px 70px);
+    box-shadow: inset 0 0 30px #073d18;
+}
+
+.boundary {
+    position: absolute;
+    inset: 5%;
+    border: 3px solid white;
+    border-radius: 50%;
+}
+
+.pitch {
+    position: absolute;
+    width: 9%;
+    height: 32%;
+    left: 45.5%;
+    top: 34%;
+    background: #c7a16b;
+    border: 3px solid #80613c;
+    border-radius: 5px;
+}
+
+.pitch::before, .pitch::after {
+    content: "";
+    position: absolute;
+    width: 80%;
+    left: 10%;
+    height: 3px;
+    background: white;
+}
+
+.pitch::before { top: 12%; }
+.pitch::after { bottom: 12%; }
+
+.player {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: #ffcf42;
+    color: #152a1d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: bold;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+}
+
+.player img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-info {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.team {
+    background: #174d35;
+    padding: 15px;
+    border-radius: 12px;
+    min-width: 180px;
+}
+
+#status { color: #ffe36b; }
+
+@media(max-width:600px) {
+    .ground { aspect-ratio: 1.1; }
+    .player { width: 25px; height: 25px; font-size: 12px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏏 FRIENDS CRICKET STADIUM 🏏</h1>
+    <p>Welcome to the match!</p>
+</header>
+
+<div class="stadium">
+
+    <div class="stands"></div>
+
+    <div class="ground" id="ground">
+        <div class="boundary"></div>
+        <div class="pitch"></div>
+    </div>
+
+    <div class="stands"></div>
+
+    <div class="team-info">
+        <div class="team">
+            <h2>🔵 TEAM A</h2>
+            <h3 id="teamACount">0 / 11 Players</h3>
+        </div>
+
+        <div class="team">
+            <h2>🔴 TEAM B</h2>
+            <h3>11 / 11 Bots</h3>
+        </div>
+    </div>
+
+    <h3 id="status">Loading players...</h3>
+
+</div>
+
+<script>
+const positions = [
+    [50, 12], [75, 20], [90, 42],
+    [85, 75], [65, 88], [35, 88],
+    [15, 72], [10, 42], [27, 20],
+    [50, 30], [50, 70]
+];
+
+async function createGround() {
+    const ground = document.getElementById("ground");
+
+    try {
+        const response = await fetch("/players");
+        const data = await response.json();
+
+        const players = data.players || [];
+        document.getElementById("teamACount").textContent =
+            Math.min(players.length, 11) + " / 11 Players";
+
+        for (let i = 0; i < 22; i++) {
+            const marker = document.createElement("div");
+            marker.className = "player";
+
+            const position = positions[i % 11];
+            marker.style.left = position[0] + "%";
+            marker.style.top = position[1] + "%";
+
+            if (i < 11 && players[i]) {
+                const img = document.createElement("img");
+                img.src = players[i].photo;
+                img.alt = players[i].name;
+                marker.appendChild(img);
+                marker.title = players[i].name;
+            } else {
+                marker.textContent = i < 11 ? "B" : "🤖";
+                marker.title = i < 11 ? "Bot player" : "Team B bot";
+                marker.style.background = i < 11 ? "#ffcf42" : "#ef6464";
+            }
+
+            ground.appendChild(marker);
+        }
+
+        document.getElementById("status").textContent =
+            "🏆 Stadium ready! " + players.length + " human player(s) registered.";
+
+    } catch (error) {
+        document.getElementById("status").textContent =
+            "Unable to load players. Please try again.";
+    }
+}
+
+createGround();
+</script>
+
+</body>
+</html>
