@@ -1,98 +1,133 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Friends Cricket Ground</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            margin: 0;
-            background: #10251b;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friends Cricket Game</title>
 
-        h1 { color: #ffd700; }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .scoreboard {
-            padding: 12px;
-            background: #172f24;
-            margin: 15px;
-            border-radius: 12px;
-        }
+body {
+    margin: 0;
+    background: #10251b;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
 
-        .ground {
-            position: relative;
-            width: 90%;
-            max-width: 750px;
-            height: 480px;
-            margin: 25px auto;
-            border: 12px solid #d9c99a;
-            border-radius: 50%;
-            background: repeating-linear-gradient(
-                90deg, #16833c, #16833c 35px, #197d39 35px, #197d39 70px
-            );
-            box-sizing: border-box;
-        }
+h1 {
+    color: gold;
+    margin: 20px 5px;
+}
 
-        .pitch {
-            position: absolute;
-            width: 65px;
-            height: 180px;
-            background: #c9a16b;
-            border: 3px solid #fff0c5;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+.scoreboard {
+    background: #193c2b;
+    padding: 15px;
+    margin: 12px;
+    border-radius: 12px;
+}
 
-        .player {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            width: 65px;
-        }
+.ground {
+    position: relative;
+    width: 94%;
+    max-width: 850px;
+    height: 500px;
+    margin: 25px auto;
+    border: 12px solid #c9b47c;
+    border-radius: 50%;
+    background: repeating-linear-gradient(
+        90deg,
+        #16833c 0px,
+        #16833c 40px,
+        #197b38 40px,
+        #197b38 80px
+    );
+    overflow: hidden;
+}
 
-        .player img {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: 3px solid white;
-            object-fit: cover;
-            background: white;
-        }
+.pitch {
+    position: absolute;
+    width: 65px;
+    height: 175px;
+    background: #c9a16b;
+    border: 3px solid white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 
-        .bot img {
-            border-color: #ffcc00;
-        }
+.player {
+    position: absolute;
+    width: 75px;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
 
-        .player span {
-            display: block;
-            background: #092b17;
-            padding: 3px;
-            border-radius: 5px;
-        }
+.player img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    background: white;
+}
 
-        button {
-            padding: 12px 25px;
-            background: #ffd700;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
+.player.human img {
+    border-color: #00ffae;
+}
+
+.player.bot img {
+    border-color: gold;
+}
+
+.player-name {
+    display: block;
+    background: #092b17;
+    color: white;
+    padding: 4px;
+    border-radius: 5px;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+button {
+    background: gold;
+    color: black;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px;
+}
+
+#status {
+    color: #ffd700;
+    margin: 15px;
+}
+
+.legend {
+    margin: 12px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>🏏 FRIENDS CRICKET GROUND</h1>
+<h1>🏏 FRIENDS CRICKET GROUND 🏏</h1>
 
 <div class="scoreboard">
     <h2>TEAM A 🟢 vs TEAM B 🔵</h2>
     <h3 id="playerCount">Loading players...</h3>
-    <p>11 players per team | Humans + Bots</p>
+    <p>11 players in each team</p>
+</div>
+
+<div class="legend">
+    🟢 Human Players &nbsp;&nbsp; 🟡 Bot Players
 </div>
 
 <div class="ground">
@@ -100,54 +135,114 @@
     <div id="players"></div>
 </div>
 
-<button onclick="loadPlayers()">REFRESH PLAYERS</button>
+<h3 id="status">Connecting to server...</h3>
+
+<button onclick="loadPlayers()">🔄 REFRESH PLAYERS</button>
 
 <script>
+const positions = [
+    [50, 12],
+    [75, 18],
+    [88, 38],
+    [88, 65],
+    [75, 83],
+    [50, 88],
+    [25, 83],
+    [12, 65],
+    [12, 38],
+    [25, 18],
+    [50, 35]
+];
+
+function createPlayer(player, index, team) {
+    const card = document.createElement("div");
+
+    const isHuman = Boolean(player);
+
+    card.className = "player " + (isHuman ? "human" : "bot");
+
+    const pos = positions[index];
+
+    card.style.left = pos[0] + "%";
+    card.style.top = pos[1] + "%";
+
+    const img = document.createElement("img");
+
+    if (isHuman) {
+        // Photo path is loaded from the same website.
+        img.src = new URL(player.photo, window.location.origin).href;
+        img.alt = player.name;
+
+        img.onerror = function() {
+            img.src = "https://placehold.co/80x80/16833c/ffffff?text=Human";
+        };
+    } else {
+        img.src = "https://placehold.co/80x80/555555/ffffff?text=BOT";
+        img.alt = "Bot player";
+    }
+
+    const name = document.createElement("span");
+    name.className = "player-name";
+
+    name.textContent = isHuman
+        ? player.name
+        : "Bot " + (index + 1);
+
+    card.appendChild(img);
+    card.appendChild(name);
+
+    return card;
+}
+
 async function loadPlayers() {
     const area = document.getElementById("players");
-    area.replaceChildren();
+    const status = document.getElementById("status");
+    const count = document.getElementById("playerCount");
+
+    status.textContent = "Loading registered players...";
 
     try {
-        const response = await fetch("/players");
-        if (!response.ok) throw new Error("Could not load players");
+        const response = await fetch("/players", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("Server returned " + response.status);
+        }
 
         const data = await response.json();
-        const humans = data.players || [];
 
-        document.getElementById("playerCount").textContent =
-            "Registered humans: " + humans.length + " / 11";
+        // Only use valid registered human players.
+        const humans = (data.players || [])
+            .filter(p => p && p.name && p.photo)
+            .slice(0, 11);
 
-        const positions = [
-            [50, 12], [75, 18], [88, 35], [88, 65],
-            [75, 82], [50, 88], [25, 82], [12, 65],
-            [12, 35], [25, 18], [50, 35]
-        ];
+        area.replaceChildren();
 
-        for (let i = 0; i < 22; i++) {
-            const teamA = i < 11;
-            const player = teamA ? humans[i] : null;
-            const pos = positions[i % 11];
-
-            const card = document.createElement("div");
-            card.className = "player" + (player ? "" : " bot");
-            card.style.left = pos[0] + "%";
-            card.style.top = pos[1] + "%";
-
-            const photo = document.createElement("img");
-            photo.src = player ? player.photo : "https://placehold.co/80x80/555/fff?text=BOT";
-            photo.alt = player ? player.name : "Bot";
-
-            const name = document.createElement("span");
-            name.textContent = player
-                ? player.name
-                : "Bot " + (teamA ? i + 1 : i - 10);
-
-            card.append(photo, name);
-            area.appendChild(card);
+        // Team A: registered humans first, then bots.
+        for (let i = 0; i < 11; i++) {
+            const player = humans[i] || null;
+            area.appendChild(createPlayer(player, i, "A"));
         }
+
+        // Team B: 11 bots.
+        for (let i = 0; i < 11; i++) {
+            area.appendChild(createPlayer(null, i, "B"));
+        }
+
+        count.textContent =
+            "Team A Humans: " + humans.length +
+            " | Team A Bots: " + (11 - humans.length) +
+            " | Team B Bots: 11";
+
+        status.textContent =
+            humans.length > 0
+            ? "✅ Registered human players loaded successfully!"
+            : "No human players registered yet.";
+
     } catch (error) {
-        document.getElementById("playerCount").textContent =
-            "Could not load players. Please refresh.";
+        status.textContent = "❌ Could not load players: " + error.message;
+        count.textContent = "Player loading failed";
     }
 }
 
@@ -156,3 +251,4 @@ loadPlayers();
 
 </body>
 </html>
+
