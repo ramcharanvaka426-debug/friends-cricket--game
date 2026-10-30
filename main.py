@@ -1,23 +1,14 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 players = []
 connections = []
 
 @app.get("/")
 def home():
-    return {
-        "message": "Friends Cricket Game Server is Running!"
-    }
+    return FileResponse("index.html")
 
 @app.post("/register")
 def register(player: dict):
@@ -27,7 +18,7 @@ def register(player: dict):
     players.append(player)
 
     return {
-        "message": "Player registered successfully!",
+        "message": "Registration successful!",
         "players": players
     }
 
