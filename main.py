@@ -1,30 +1,36 @@
+
 from fastapi import FastAPI, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi import HTTPException
 import os
 import uuid
 
 app = FastAPI()
 
-# Create photo storage folder
 os.makedirs("uploads", exist_ok=True)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 players = []
-@app.get("/players")
-def get_players():
-    return {
-        "total_players": len(players),
-        "players": players
-    }
 connections = []
 
+
+# MAIN REGISTRATION PAGE
 @app.get("/")
 def home():
     return FileResponse("index.html")
 
-# Register a player with a photograph
+
+# CRICKET GAME PAGE
+@app.get("/game.html")
+def game_page():
+    if not os.path.isfile("game.html"):
+        raise HTTPException(status_code=404, detail="game.html file not found")
+    return FileResponse("game.html")
+
+
+# REGISTER PLAYER
 @app.post("/register")
 async def register(
     name: str = Form(...),
@@ -32,6 +38,9 @@ async def register(
 ):
     if len(players) >= 11:
         return {"message": "Team is full!"}
+
+    if not name.strip():
+        return {"message": "Please enter your name!"}
 
     if not photo.content_type or not photo.content_type.startswith("image/"):
         return {"message": "Please upload an image!"}
@@ -53,7 +62,7 @@ async def register(
         f.write(image_data)
 
     player = {
-        "name": name,
+        "name": name.strip(),
         "photo": "/uploads/" + filename,
         "type": "Human"
     }
@@ -66,6 +75,17 @@ async def register(
         "total_players": len(players)
     }
 
+
+# DISPLAY PLAYERS
+@app.get("/players")
+def get_players():
+    return {
+        "total_players": len(players),
+        "players": players
+    }
+
+
+# WEBSOCKET CONNECTION
 @app.websocket("/ws")
 async def game_connection(websocket: WebSocket):
     await websocket.accept()
