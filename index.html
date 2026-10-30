@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Friends Cricket Championship</title>
+
+    <style>
+        body {
+            background: #123d24;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+            padding: 30px;
+        }
+
+        h1 {
+            color: gold;
+        }
+
+        .game-box {
+            background: #205b35;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        input, button {
+            padding: 12px;
+            margin: 10px;
+            border-radius: 8px;
+        }
+
+        button {
+            background: gold;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🏏 FRIENDS CRICKET CHAMPIONSHIP</h1>
+
+    <div class="game-box">
+
+        <h2>Player Registration</h2>
+
+        <input id="playerName"
+               placeholder="Enter your name">
+
+        <br>
+
+        <input type="file"
+               id="photo"
+               accept="image/*">
+
+        <br>
+
+        <button onclick="registerPlayer()">
+            JOIN MATCH
+        </button>
+
+        <h3 id="message"></h3>
+
+    </div>
+
+    <script>
+        function registerPlayer() {
+            let name = document.getElementById("playerName").value;
+            let photo = document.getElementById("photo").files[0];
+
+            if (!name || !photo) {
+                document.getElementById("message").innerText =
+                    "Enter your name and upload your photo!";
+                return;
+            }
+
+            document.getElementById("message").innerText =
+                "Welcome " + name + "! Registration page is working.";
+        }
+    </script>
+
+</body>
+</html>
