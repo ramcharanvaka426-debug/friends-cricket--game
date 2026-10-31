@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Friends Cricket Game</title>
+<title>Friends Cricket Stadium</title>
 
 <style>
 * {
@@ -21,23 +21,23 @@ body {
 
 h1 {
     color: gold;
-    margin: 20px 5px;
+    padding: 12px;
 }
 
 .scoreboard {
     background: #193c2b;
-    padding: 15px;
     margin: 12px;
+    padding: 15px;
     border-radius: 12px;
 }
 
 .ground {
     position: relative;
-    width: 94%;
-    max-width: 850px;
-    height: 500px;
+    width: 95%;
+    max-width: 950px;
+    height: 560px;
     margin: 25px auto;
-    border: 12px solid #c9b47c;
+    border: 12px solid #d8c18b;
     border-radius: 50%;
     background: repeating-linear-gradient(
         90deg,
@@ -51,8 +51,8 @@ h1 {
 
 .pitch {
     position: absolute;
-    width: 65px;
-    height: 175px;
+    width: 75px;
+    height: 180px;
     background: #c9a16b;
     border: 3px solid white;
     top: 50%;
@@ -62,77 +62,101 @@ h1 {
 
 .player {
     position: absolute;
-    width: 75px;
+    width: 90px;
     transform: translate(-50%, -50%);
-    z-index: 2;
+    z-index: 5;
 }
 
 .player img {
-    width: 48px;
-    height: 48px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid white;
     background: white;
+    display: block;
+    margin: auto;
 }
 
-.player.human img {
-    border-color: #00ffae;
+.human img {
+    border: 5px solid #00ff80;
+    box-shadow: 0 0 15px #00ff80;
 }
 
-.player.bot img {
-    border-color: gold;
+.bot img {
+    border: 4px solid gold;
 }
 
 .player-name {
     display: block;
-    background: #092b17;
+    margin-top: 3px;
+    background: #071c11;
     color: white;
-    padding: 4px;
-    border-radius: 5px;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 7px;
     overflow-wrap: anywhere;
 }
 
-button {
-    background: gold;
-    color: black;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 10px;
+.human .player-name {
+    background: #005d32;
+    border: 2px solid #00ff80;
+    color: white;
 }
 
 #status {
-    color: #ffd700;
+    color: gold;
+    padding: 10px;
+}
+
+button {
+    padding: 13px 25px;
+    background: gold;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
     margin: 15px;
 }
 
-.legend {
-    margin: 12px;
+@media(max-width: 600px) {
+    .ground {
+        height: 440px;
+        width: 98%;
+    }
+
+    .player {
+        width: 65px;
+    }
+
+    .player img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .player-name {
+        font-size: 10px;
+        padding: 3px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<h1>🏏 FRIENDS CRICKET GROUND 🏏</h1>
+<h1>🏏 FRIENDS CRICKET STADIUM 🏏</h1>
 
 <div class="scoreboard">
-    <h2>TEAM A 🟢 vs TEAM B 🔵</h2>
+    <h2>TEAM A 🟢 VS TEAM B 🔵</h2>
     <h3 id="playerCount">Loading players...</h3>
-    <p>11 players in each team</p>
-</div>
-
-<div class="legend">
-    🟢 Human Players &nbsp;&nbsp; 🟡 Bot Players
+    <p>11 Players Per Team</p>
 </div>
 
 <div class="ground">
     <div class="pitch"></div>
-    <div id="players"></div>
+    <div id="teamA"></div>
+    <div id="teamB"></div>
 </div>
 
 <h3 id="status">Connecting to server...</h3>
@@ -140,51 +164,55 @@ button {
 <button onclick="loadPlayers()">🔄 REFRESH PLAYERS</button>
 
 <script>
-const positions = [
-    [50, 12],
-    [75, 18],
-    [88, 38],
-    [88, 65],
-    [75, 83],
-    [50, 88],
-    [25, 83],
-    [12, 65],
-    [12, 38],
-    [25, 18],
-    [50, 35]
+const positionsA = [
+    [50, 12], [75, 20], [87, 40],
+    [85, 68], [70, 85], [50, 90],
+    [28, 85], [13, 68], [12, 40],
+    [27, 20], [50, 35]
 ];
 
-function createPlayer(player, index, team) {
+const positionsB = [
+    [43, 45], [57, 45], [43, 55],
+    [57, 55], [35, 35], [65, 35],
+    [35, 65], [65, 65], [50, 25],
+    [50, 75], [50, 50]
+];
+
+function createPlayer(player, index, position) {
     const card = document.createElement("div");
 
-    const isHuman = Boolean(player);
+    const human = player !== null;
 
-    card.className = "player " + (isHuman ? "human" : "bot");
+    card.className = human ? "player human" : "player bot";
 
-    const pos = positions[index];
-
-    card.style.left = pos[0] + "%";
-    card.style.top = pos[1] + "%";
+    card.style.left = position[0] + "%";
+    card.style.top = position[1] + "%";
 
     const img = document.createElement("img");
 
-    if (isHuman) {
-        // Photo path is loaded from the same website.
-        img.src = new URL(player.photo, window.location.origin).href;
+    if (human) {
+        img.src = new URL(
+            player.photo,
+            window.location.origin
+        ).href;
+
         img.alt = player.name;
 
         img.onerror = function() {
-            img.src = "https://placehold.co/80x80/16833c/ffffff?text=Human";
+            img.src =
+                "https://placehold.co/100x100/005d32/ffffff?text=HUMAN";
         };
     } else {
-        img.src = "https://placehold.co/80x80/555555/ffffff?text=BOT";
-        img.alt = "Bot player";
+        img.src =
+            "https://placehold.co/100x100/555555/ffffff?text=BOT";
+        img.alt = "Bot";
     }
 
     const name = document.createElement("span");
+
     name.className = "player-name";
 
-    name.textContent = isHuman
+    name.textContent = human
         ? player.name
         : "Bot " + (index + 1);
 
@@ -195,39 +223,61 @@ function createPlayer(player, index, team) {
 }
 
 async function loadPlayers() {
-    const area = document.getElementById("players");
+
+    const teamA = document.getElementById("teamA");
+    const teamB = document.getElementById("teamB");
+
     const status = document.getElementById("status");
     const count = document.getElementById("playerCount");
 
-    status.textContent = "Loading registered players...";
+    status.textContent = "Loading players...";
 
     try {
-        const response = await fetch("/players", {
-            cache: "no-store"
-        });
+
+        const response = await fetch(
+            "/players?time=" + Date.now(),
+            { cache: "no-store" }
+        );
 
         if (!response.ok) {
-            throw new Error("Server returned " + response.status);
+            throw new Error("Server error: " + response.status);
         }
 
         const data = await response.json();
 
-        // Only use valid registered human players.
         const humans = (data.players || [])
             .filter(p => p && p.name && p.photo)
             .slice(0, 11);
 
-        area.replaceChildren();
+        teamA.replaceChildren();
+        teamB.replaceChildren();
 
-        // Team A: registered humans first, then bots.
+        // TEAM A: HUMANS FIRST, THEN BOTS
+
         for (let i = 0; i < 11; i++) {
+
             const player = humans[i] || null;
-            area.appendChild(createPlayer(player, i, "A"));
+
+            const card = createPlayer(
+                player,
+                i,
+                positionsA[i]
+            );
+
+            teamA.appendChild(card);
         }
 
-        // Team B: 11 bots.
+        // TEAM B: 11 BOTS
+
         for (let i = 0; i < 11; i++) {
-            area.appendChild(createPlayer(null, i, "B"));
+
+            const card = createPlayer(
+                null,
+                i,
+                positionsB[i]
+            );
+
+            teamB.appendChild(card);
         }
 
         count.textContent =
@@ -235,14 +285,15 @@ async function loadPlayers() {
             " | Team A Bots: " + (11 - humans.length) +
             " | Team B Bots: 11";
 
-        status.textContent =
-            humans.length > 0
-            ? "✅ Registered human players loaded successfully!"
-            : "No human players registered yet.";
+        status.textContent = humans.length > 0
+            ? "✅ Human players displayed successfully!"
+            : "No registered human players found.";
 
     } catch (error) {
-        status.textContent = "❌ Could not load players: " + error.message;
-        count.textContent = "Player loading failed";
+
+        status.textContent =
+            "❌ Error loading players: " + error.message;
+
     }
 }
 
