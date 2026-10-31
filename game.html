@@ -4,14 +4,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Friends Cricket - 3D Stadium</title>
+<title>Friends Cricket 3D Stadium</title>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
     margin: 0;
     overflow: hidden;
-    background: #111;
+    background: #87ceeb;
     font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
 }
 
 #scoreboard {
@@ -19,24 +25,25 @@ body {
     top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.85);
+    z-index: 5;
+    background: rgba(0,0,0,0.88);
     color: white;
     padding: 14px 25px;
     border-radius: 12px;
     text-align: center;
-    z-index: 5;
-    min-width: 230px;
+    min-width: 260px;
+    box-shadow: 0 3px 15px #3338;
 }
 
 #score {
-    font-size: 27px;
+    font-size: 30px;
     font-weight: bold;
     color: #65ff85;
+    margin: 5px;
 }
 
 #details {
-    font-size: 14px;
-    margin-top: 5px;
+    font-size: 13px;
 }
 
 #message {
@@ -44,120 +51,206 @@ body {
     bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 10px 18px;
-    border-radius: 8px;
     z-index: 5;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
     text-align: center;
+    max-width: 90%;
+}
+
+#controls {
+    position: absolute;
+    right: 12px;
+    bottom: 15px;
+    z-index: 5;
+}
+
+#controls button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 7px;
+    background: #ffffff;
+    cursor: pointer;
+    font-weight: bold;
 }
 </style>
+
+<!-- FIX: Import map allows OrbitControls to find Three.js -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
 </head>
 
 <body>
 
 <div id="scoreboard">
-    <div>FRIENDS CRICKET 3D</div>
+    <div>🏏 FRIENDS CRICKET 3D</div>
     <div id="score">0 / 0</div>
     <div id="details">Team A | Overs: 0.0</div>
 </div>
 
 <div id="message">Loading 3D cricket stadium...</div>
 
-<script type="module">
-import * as THREE from
-'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+<div id="controls">
+    <button onclick="resetCamera()">Reset Camera</button>
+</div>
 
+<script>
+function showError(message) {
+    const box = document.getElementById("message");
+    if (box) box.textContent = "3D loading error: " + message;
+}
+
+window.addEventListener("error", function(event) {
+    showError(event.message || "JavaScript error");
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+    showError(event.reason?.message || "Library loading failed");
+});
+</script>
+
+<script type="module">
+import * as THREE from 'three';
 import { OrbitControls } from
 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-// SCENE
+try {
+
+// ---------------- SCENE ----------------
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 100, 230);
+scene.fog = new THREE.Fog(0x87ceeb, 120, 250);
 
-// CAMERA
+// ---------------- CAMERA ----------------
+
 const camera = new THREE.PerspectiveCamera(
-    55, window.innerWidth / window.innerHeight, 0.1, 500
+    55,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    500
 );
+
 camera.position.set(0, 65, 90);
 
-// RENDERER
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// ---------------- RENDERER ----------------
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
 document.body.appendChild(renderer.domElement);
 
-// CAMERA CONTROLS
+// ---------------- CAMERA CONTROLS ----------------
+
 const controls = new OrbitControls(camera, renderer.domElement);
+
 controls.target.set(0, 0, 0);
 controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2.05;
 controls.minDistance = 25;
 controls.maxDistance = 150;
 
-// LIGHTS
-scene.add(new THREE.HemisphereLight(0xffffff, 0x42612d, 2));
+// ---------------- LIGHTS ----------------
+
+scene.add(
+    new THREE.HemisphereLight(0xffffff, 0x42612d, 2)
+);
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 3);
+
 sunlight.position.set(-40, 70, 40);
 sunlight.castShadow = true;
 sunlight.shadow.mapSize.set(2048, 2048);
+
 scene.add(sunlight);
 
-// MATERIALS
-const grassMat = new THREE.MeshStandardMaterial({ color: 0x328b38 });
-const pitchMat = new THREE.MeshStandardMaterial({ color: 0xc7a477 });
-const lineMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+// ---------------- MATERIALS ----------------
 
-// GROUND
+const grassMat = new THREE.MeshStandardMaterial({
+    color: 0x328b38
+});
+
+const pitchMat = new THREE.MeshStandardMaterial({
+    color: 0xc7a477
+});
+
+const whiteMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff
+});
+
+// ---------------- CRICKET GROUND ----------------
+
 const ground = new THREE.Mesh(
     new THREE.CircleGeometry(75, 100),
     grassMat
 );
+
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// GRASS STRIPES
+// ---------------- GRASS STRIPES ----------------
+
 for (let i = -6; i <= 6; i++) {
+
     const stripe = new THREE.Mesh(
-        new THREE.BoxGeometry(5, 0.03, 150),
+        new THREE.BoxGeometry(5, 0.025, 150),
         new THREE.MeshStandardMaterial({
             color: i % 2 === 0 ? 0x3d9841 : 0x348a38
         })
     );
-    stripe.position.set(i * 10, 0.02, 0);
+
+    stripe.position.set(i * 10, 0.025, 0);
     scene.add(stripe);
 }
 
-// BOUNDARY
+// ---------------- BOUNDARY ----------------
+
 const boundary = new THREE.Mesh(
     new THREE.TorusGeometry(65, 0.35, 8, 150),
-    new THREE.MeshStandardMaterial({ color: 0xffffff })
+    whiteMat
 );
+
 boundary.rotation.x = Math.PI / 2;
 boundary.position.y = 0.3;
 scene.add(boundary);
 
-// PITCH
+// ---------------- PITCH ----------------
+
 const pitch = new THREE.Mesh(
     new THREE.BoxGeometry(10, 0.15, 35),
     pitchMat
 );
-pitch.position.y = 0.1;
+
+pitch.position.y = 0.12;
 pitch.receiveShadow = true;
 scene.add(pitch);
 
-// CREASE LINES
+// ---------------- CREASE LINES ----------------
+
 function makeLine(x, z, width, depth) {
+
     const line = new THREE.Mesh(
         new THREE.BoxGeometry(width, 0.08, depth),
-        lineMat
+        whiteMat
     );
+
     line.position.set(x, 0.23, z);
     scene.add(line);
 }
@@ -167,43 +260,63 @@ makeLine(0, 14, 10, 0.25);
 makeLine(0, -10, 0.25, 8);
 makeLine(0, 10, 0.25, 8);
 
-// STUMPS
+// ---------------- WICKETS ----------------
+
 function makeStumps(z) {
+
     for (let i = -1; i <= 1; i++) {
+
         const stump = new THREE.Mesh(
             new THREE.CylinderGeometry(0.12, 0.12, 2.3, 12),
-            new THREE.MeshStandardMaterial({ color: 0xf5e6c8 })
+            new THREE.MeshStandardMaterial({
+                color: 0xf5e6c8
+            })
         );
+
         stump.position.set(i * 0.55, 1.3, z);
         stump.castShadow = true;
         scene.add(stump);
     }
 }
+
 makeStumps(-14);
 makeStumps(14);
 
-// STADIUM SEATING
-const seatColors = [0x164b91, 0x164b91, 0x185d9c];
+// ---------------- STADIUM SEATING ----------------
 
 for (let row = 0; row < 5; row++) {
+
     const seats = new THREE.Mesh(
-        new THREE.TorusGeometry(70 + row * 2, 1.4, 4, 150),
+        new THREE.TorusGeometry(
+            70 + row * 2,
+            1.4,
+            4,
+            150
+        ),
         new THREE.MeshStandardMaterial({
-            color: seatColors[row % seatColors.length]
+            color: row % 2 === 0 ? 0x164b91 : 0x185d9c
         })
     );
+
     seats.rotation.x = Math.PI / 2;
     seats.position.y = 3 + row * 2.2;
+
     scene.add(seats);
 }
 
-// STADIUM LIGHT TOWERS
+// ---------------- STADIUM LIGHTS ----------------
+
 for (const x of [-55, 55]) {
+
     for (const z of [-55, 55]) {
+
         const pole = new THREE.Mesh(
             new THREE.CylinderGeometry(0.5, 0.8, 28, 12),
-            new THREE.MeshStandardMaterial({ color: 0x777777 })
+            new THREE.MeshStandardMaterial({
+                color: 0x777777
+            })
         );
+
         pole.position.set(x, 14, z);
         scene.add(pole);
 
@@ -215,13 +328,16 @@ for (const x of [-55, 55]) {
                 emissiveIntensity: 0.4
             })
         );
+
         lamp.position.set(x, 29, z);
         scene.add(lamp);
     }
 }
 
-// 3D HUMAN PLAYER
+// ---------------- 3D PLAYER CREATION ----------------
+
 function createPlayer(name, jerseyColor, x, z) {
+
     const player = new THREE.Group();
 
     const jersey = new THREE.MeshStandardMaterial({
@@ -242,37 +358,48 @@ function createPlayer(name, jerseyColor, x, z) {
     });
 
     // BODY
+
     const body = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.65, 0.8, 2.2, 12),
+        new THREE.CylinderGeometry(0.65, 0.8, 2.2, 16),
         jersey
     );
+
     body.position.y = 3.1;
     body.castShadow = true;
     player.add(body);
 
     // HEAD
+
     const head = new THREE.Mesh(
         new THREE.SphereGeometry(0.62, 20, 20),
         skin
     );
+
     head.position.y = 4.65;
     head.castShadow = true;
     player.add(head);
 
     // CAP
+
     const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(0.66, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+        new THREE.SphereGeometry(
+            0.66, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2
+        ),
         jersey
     );
+
     cap.position.y = 5.0;
     player.add(cap);
 
-    // LEGS
+    // LEGS AND SHOES
+
     for (const side of [-1, 1]) {
+
         const leg = new THREE.Mesh(
             new THREE.CylinderGeometry(0.24, 0.28, 1.8, 12),
             trousers
         );
+
         leg.position.set(side * 0.35, 1.4, 0);
         leg.castShadow = true;
         player.add(leg);
@@ -281,16 +408,20 @@ function createPlayer(name, jerseyColor, x, z) {
             new THREE.BoxGeometry(0.55, 0.35, 0.85),
             shoes
         );
+
         shoe.position.set(side * 0.35, 0.45, -0.15);
         player.add(shoe);
     }
 
-    // ARMS
+    // ARMS AND HANDS
+
     for (const side of [-1, 1]) {
+
         const arm = new THREE.Mesh(
             new THREE.CylinderGeometry(0.2, 0.23, 1.8, 12),
             jersey
         );
+
         arm.position.set(side * 0.88, 3.1, 0);
         arm.rotation.z = side * -0.18;
         arm.castShadow = true;
@@ -300,108 +431,171 @@ function createPlayer(name, jerseyColor, x, z) {
             new THREE.SphereGeometry(0.23, 12, 12),
             skin
         );
+
         hand.position.set(side * 0.98, 2.15, 0);
         player.add(hand);
     }
 
-    // PLAYER NAME
     player.userData.playerName = name;
-
     player.position.set(x, 0, z);
+
     scene.add(player);
 
     return player;
 }
 
-// TEAM FORMATIONS
+// ---------------- PLAYER POSITIONS ----------------
+
 const teamA = [];
 const teamB = [];
 
 const positionsA = [
-    [-4, 14], [0, -14], [-15, -20], [15, -20],
-    [-30, -10], [30, -10], [-35, 15], [35, 15],
-    [-20, 35], [20, 35], [0, 42]
+    [-4, 14], [0, -14], [-15, -20],
+    [15, -20], [-30, -10], [30, -10],
+    [-35, 15], [35, 15], [-20, 35],
+    [20, 35], [0, 42]
 ];
 
 const positionsB = [
-    [4, -14], [0, -24], [-15, -30], [15, -30],
-    [-30, -20], [30, -20], [-40, 0], [40, 0],
-    [-25, 25], [25, 25], [0, 52]
+    [4, -14], [0, -24], [-15, -30],
+    [15, -30], [-30, -20], [30, -20],
+    [-40, 0], [40, 0], [-25, 25],
+    [25, 25], [0, 52]
 ];
 
+// ---------------- LOAD TEAMS ----------------
+
 function addTeams(players = []) {
+
     teamA.forEach(p => scene.remove(p));
     teamB.forEach(p => scene.remove(p));
+
     teamA.length = 0;
     teamB.length = 0;
 
     for (let i = 0; i < 11; i++) {
+
         const human = players[i];
-        const name = human ? human.name : `Team A Bot ${i + 1}`;
 
-        teamA.push(
-            createPlayer(name, 0x164bdb,
-                positionsA[i][0], positionsA[i][1])
+        const name = human
+            ? human.name
+            : "Team A Bot " + (i + 1);
+
+        const playerA = createPlayer(
+            name,
+            0x164bdb,
+            positionsA[i][0],
+            positionsA[i][1]
         );
 
-        teamB.push(
-            createPlayer(`Team B Bot ${i + 1}`, 0xd62828,
-                positionsB[i][0], positionsB[i][1])
+        teamA.push(playerA);
+
+        const playerB = createPlayer(
+            "Team B Bot " + (i + 1),
+            0xd62828,
+            positionsB[i][0],
+            positionsB[i][1]
         );
+
+        teamB.push(playerB);
     }
 
     document.getElementById("message").textContent =
-        `3D players loaded: ${teamA.length + teamB.length}`;
+        "3D stadium ready! 22 players loaded.";
 }
 
-// LOAD REGISTERED PLAYERS
+// ---------------- LOAD REGISTERED PLAYERS ----------------
+
 async function loadPlayers() {
+
     try {
-        const response = await fetch("/players?t=" + Date.now());
+
+        const response = await fetch(
+            "/players?t=" + Date.now()
+        );
+
+        if (!response.ok) {
+            throw new Error("Player API returned " + response.status);
+        }
+
         const data = await response.json();
+
         addTeams(data.players || []);
+
     } catch (error) {
+
         console.error("Player loading error:", error);
-        addTeams([]);
+
+        if (teamA.length === 0) {
+            addTeams([]);
+        }
+
         document.getElementById("message").textContent =
-            "Showing 22 3D demo players";
+            "Showing demo players. Registration API unavailable.";
     }
 }
 
-// LIVE SCOREBOARD
+// ---------------- LIVE SCOREBOARD ----------------
+
 async function updateScore() {
+
     try {
-        const response = await fetch("/match?t=" + Date.now());
+
+        const response = await fetch(
+            "/match?t=" + Date.now()
+        );
+
+        if (!response.ok) return;
+
         const data = await response.json();
         const match = data.match;
 
         document.getElementById("score").textContent =
-            `${match.runs} / ${match.wickets}`;
+            match.runs + " / " + match.wickets;
 
         document.getElementById("details").textContent =
-            `${match.batting_team} | Overs: ${match.overs}.${match.balls} | Extras: ${match.extras}`;
+            match.batting_team +
+            " | Overs: " + match.overs + "." + match.balls +
+            " | Extras: " + match.extras;
+
     } catch (error) {
-        console.log("Score not available yet");
+
+        console.log("Score not available:", error);
     }
 }
 
-// ANIMATION
+// ---------------- CAMERA RESET ----------------
+
+window.resetCamera = function() {
+
+    camera.position.set(0, 65, 90);
+    controls.target.set(0, 0, 0);
+    controls.update();
+};
+
+// ---------------- ANIMATION ----------------
+
 const clock = new THREE.Clock();
 
 function animate() {
+
     requestAnimationFrame(animate);
 
     const time = clock.getElapsedTime();
 
     [...teamA, ...teamB].forEach((player, index) => {
-        player.rotation.y = Math.sin(time * 0.7 + index) * 0.04;
+        player.rotation.y =
+            Math.sin(time * 0.7 + index) * 0.04;
     });
 
     controls.update();
     renderer.render(scene, camera);
 }
 
-loadPlayers();
+// ---------------- START GAME ----------------
+
+await loadPlayers();
+
 updateScore();
 
 setInterval(loadPlayers, 10000);
@@ -409,12 +603,28 @@ setInterval(updateScore, 2000);
 
 animate();
 
-// RESIZE
+// ---------------- RESIZE ----------------
+
 window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+
+    camera.aspect =
+        window.innerWidth / window.innerHeight;
+
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
 });
+
+} catch (error) {
+
+    console.error(error);
+
+    document.getElementById("message").textContent =
+        "3D error: " + error.message;
+}
 </script>
 
 </body>
