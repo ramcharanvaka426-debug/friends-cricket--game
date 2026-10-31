@@ -1,304 +1,191 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Friends Cricket Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends Cricket - Player Registration</title>
 
-<style>
-* {
-    box-sizing: border-box;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #073b25;
-    color: white;
-    text-align: center;
-}
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #071b2c, #075b43);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-header {
-    background: #062b1b;
-    padding: 25px;
-}
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #102d3d;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px #0008;
+        }
 
-h1 {
-    color: #ffdb4d;
-}
+        h1 {
+            text-align: center;
+            color: #54e39b;
+        }
 
-.container {
-    max-width: 800px;
-    margin: 25px auto;
-    padding: 15px;
-}
+        p {
+            text-align: center;
+            color: #cbd5dc;
+        }
 
-.panel {
-    background: #105b37;
-    padding: 25px;
-    margin: 20px 0;
-    border-radius: 15px;
-}
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
 
-input {
-    display: block;
-    margin: 15px auto;
-    padding: 12px;
-    width: 85%;
-    max-width: 350px;
-    border-radius: 8px;
-    border: none;
-}
+        input {
+            width: 100%;
+            padding: 13px;
+            border-radius: 8px;
+            border: 1px solid #58717e;
+            background: #f4f7f8;
+            font-size: 16px;
+        }
 
-button {
-    background: #ffdb4d;
-    color: #073b25;
-    border: none;
-    padding: 14px 30px;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-}
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 24px;
+            border: none;
+            border-radius: 8px;
+            background: #28c779;
+            color: #062a1b;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-button:hover {
-    background: orange;
-}
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
 
-#message {
-    color: #ffdb4d;
-}
+        #preview {
+            display: none;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #54e39b;
+            margin: 20px auto 0;
+        }
 
-#playerList {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-}
+        #message {
+            margin-top: 18px;
+            text-align: center;
+            line-height: 1.5;
+        }
 
-.player-card {
-    background: #073b25;
-    width: 160px;
-    padding: 15px;
-    border-radius: 12px;
-}
-
-.player-card img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ffdb4d;
-}
-
-.play-panel {
-    background: linear-gradient(135deg, #124b30, #087a42);
-    border: 2px solid #ffdb4d;
-}
-
-footer {
-    padding: 20px;
-    color: #ddd;
-}
-</style>
+        a {
+            color: #54e39b;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container">
+        <h1>🏏 Friends Cricket</h1>
+        <p>Create your player profile and join the match!</p>
 
-<header>
-    <h1>🏏 FRIENDS CRICKET GAME 🏏</h1>
-    <p>Register your player and join the match!</p>
-</header>
-
-<div class="container">
-
-    <!-- PLAYER REGISTRATION -->
-
-    <div class="panel">
-        <h2>👤 Player Registration</h2>
-
-        <form id="registrationForm">
-
+        <form id="registerForm">
+            <label for="name">Enter your player name</label>
             <input
                 type="text"
-                id="playerName"
-                placeholder="Enter your name"
+                id="name"
+                name="name"
+                placeholder="Your name"
                 required
+                maxlength="30"
             >
 
+            <label for="photo">Upload your photo</label>
             <input
                 type="file"
-                id="playerPhoto"
-                accept="image/jpeg,image/png,image/webp"
+                id="photo"
+                name="photo"
+                accept="image/png,image/jpeg,image/webp"
                 required
             >
 
-            <button type="submit">JOIN MATCH</button>
+            <img id="preview" alt="Your photo preview">
 
+            <button type="submit" id="submitButton">
+                Register Player
+            </button>
         </form>
 
-        <h3 id="message">Register to join the match!</h3>
+        <div id="message"></div>
     </div>
 
+    <script>
+        const photoInput = document.getElementById("photo");
+        const preview = document.getElementById("preview");
+        const form = document.getElementById("registerForm");
+        const message = document.getElementById("message");
+        const button = document.getElementById("submitButton");
 
-    <!-- REGISTERED PLAYERS -->
+        photoInput.addEventListener("change", function () {
+            const file = this.files[0];
 
-    <div class="panel">
-        <h2>🏏 Registered Players</h2>
+            if (!file) return;
 
-        <h3>
-            Total Players:
-            <span id="playerCount">0</span>
-        </h3>
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Please select a photo smaller than 5 MB.");
+                this.value = "";
+                preview.style.display = "none";
+                return;
+            }
 
-        <div id="playerList">
-            Loading players...
-        </div>
-    </div>
-
-
-    <!-- PLAY MATCH BUTTON -->
-
-    <div class="panel play-panel">
-
-        <h2>🏆 Ready to Play?</h2>
-
-        <p>Your beautiful cricket stadium is waiting!</p>
-
-        <button onclick="window.location.href='/game.html'">
-            🏏 PLAY MATCH
-        </button>
-
-    </div>
-
-</div>
-
-<footer>
-    Friends Cricket Game | Play Together 🏆
-</footer>
-
-
-<script>
-
-// REGISTER PLAYER
-
-const form = document.getElementById("registrationForm");
-
-form.addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    const name = document.getElementById("playerName").value.trim();
-    const photo = document.getElementById("playerPhoto").files[0];
-    const message = document.getElementById("message");
-
-    if (!name || !photo) {
-        message.textContent = "Please enter your name and upload a photo.";
-        return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("name", name);
-    formData.append("photo", photo);
-
-    message.textContent = "Registering...";
-
-    try {
-
-        const response = await fetch("/register", {
-            method: "POST",
-            body: formData
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
         });
 
-        const data = await response.json();
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
 
-        if (!response.ok || !data.player) {
-            throw new Error(data.detail || data.message || "Registration failed.");
-        }
+            const data = new FormData(form);
 
-        message.textContent = "Registration successful!";
+            button.disabled = true;
+            button.textContent = "Registering...";
+            message.textContent = "";
 
-        form.reset();
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    body: data
+                });
 
-        await loadPlayers();
+                const result = await response.json();
 
-    } catch(error) {
+                if (!response.ok) {
+                    throw new Error(result.detail || "Registration failed.");
+                }
 
-        message.textContent = "Error: " + error.message;
+                message.innerHTML =
+                    "✅ Player registered successfully!<br><br>" +
+                    '<a href="/game.html">Go to Cricket Ground →</a>';
 
-    }
-
-});
-
-
-// LOAD REGISTERED PLAYERS
-
-async function loadPlayers() {
-
-    const playerList = document.getElementById("playerList");
-    const playerCount = document.getElementById("playerCount");
-
-    try {
-
-        const response = await fetch("/players");
-
-        if (!response.ok) {
-            throw new Error("Could not load players.");
-        }
-
-        const data = await response.json();
-
-        playerCount.textContent = data.total_players;
-
-        playerList.replaceChildren();
-
-        if (!data.players || data.players.length === 0) {
-            playerList.textContent = "No players registered yet.";
-            return;
-        }
-
-        data.players.forEach(function(player) {
-
-            const card = document.createElement("div");
-            card.className = "player-card";
-
-            const heading = document.createElement("h3");
-            heading.textContent = player.name;
-
-            const image = document.createElement("img");
-            image.src = player.photo;
-            image.alt = player.name;
-
-            const type = document.createElement("p");
-            type.textContent = player.type;
-
-            card.appendChild(heading);
-            card.appendChild(image);
-            card.appendChild(type);
-
-            playerList.appendChild(card);
-
+            } catch (error) {
+                message.textContent = "❌ " + error.message;
+            } finally {
+                button.disabled = false;
+                button.textContent = "Register Player";
+            }
         });
-
-    } catch(error) {
-
-        playerList.textContent = "Unable to load players.";
-
-    }
-
-}
-
-
-// AUTOMATIC REFRESH
-
-loadPlayers();
-
-setInterval(loadPlayers, 5000);
-
-</script>
-
+    </script>
 </body>
 </html>
-
