@@ -3,303 +3,419 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Friends Cricket Stadium</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friends Cricket - 3D Stadium</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
 body {
     margin: 0;
-    background: #10251b;
-    color: white;
-    font-family: Arial, sans-serif;
-    text-align: center;
-}
-
-h1 {
-    color: gold;
-    padding: 12px;
-}
-
-.scoreboard {
-    background: #193c2b;
-    margin: 12px;
-    padding: 15px;
-    border-radius: 12px;
-}
-
-.ground {
-    position: relative;
-    width: 95%;
-    max-width: 950px;
-    height: 560px;
-    margin: 25px auto;
-    border: 12px solid #d8c18b;
-    border-radius: 50%;
-    background: repeating-linear-gradient(
-        90deg,
-        #16833c 0px,
-        #16833c 40px,
-        #197b38 40px,
-        #197b38 80px
-    );
     overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
 }
 
-.pitch {
+#scoreboard {
     position: absolute;
-    width: 75px;
-    height: 180px;
-    background: #c9a16b;
-    border: 3px solid white;
-    top: 50%;
+    top: 15px;
     left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.player {
-    position: absolute;
-    width: 90px;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 14px 25px;
+    border-radius: 12px;
+    text-align: center;
     z-index: 5;
+    min-width: 230px;
 }
 
-.player img {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: white;
-    display: block;
-    margin: auto;
-}
-
-.human img {
-    border: 5px solid #00ff80;
-    box-shadow: 0 0 15px #00ff80;
-}
-
-.bot img {
-    border: 4px solid gold;
-}
-
-.player-name {
-    display: block;
-    margin-top: 3px;
-    background: #071c11;
-    color: white;
-    font-size: 12px;
+#score {
+    font-size: 27px;
     font-weight: bold;
-    padding: 5px;
-    border-radius: 7px;
-    overflow-wrap: anywhere;
+    color: #65ff85;
 }
 
-.human .player-name {
-    background: #005d32;
-    border: 2px solid #00ff80;
+#details {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+#message {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
     color: white;
-}
-
-#status {
-    color: gold;
-    padding: 10px;
-}
-
-button {
-    padding: 13px 25px;
-    background: gold;
-    border: none;
+    padding: 10px 18px;
     border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 15px;
-}
-
-@media(max-width: 600px) {
-    .ground {
-        height: 440px;
-        width: 98%;
-    }
-
-    .player {
-        width: 65px;
-    }
-
-    .player img {
-        width: 45px;
-        height: 45px;
-    }
-
-    .player-name {
-        font-size: 10px;
-        padding: 3px;
-    }
+    z-index: 5;
+    text-align: center;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🏏 FRIENDS CRICKET STADIUM 🏏</h1>
-
-<div class="scoreboard">
-    <h2>TEAM A 🟢 VS TEAM B 🔵</h2>
-    <h3 id="playerCount">Loading players...</h3>
-    <p>11 Players Per Team</p>
+<div id="scoreboard">
+    <div>FRIENDS CRICKET 3D</div>
+    <div id="score">0 / 0</div>
+    <div id="details">Team A | Overs: 0.0</div>
 </div>
 
-<div class="ground">
-    <div class="pitch"></div>
-    <div id="teamA"></div>
-    <div id="teamB"></div>
-</div>
+<div id="message">Loading 3D cricket stadium...</div>
 
-<h3 id="status">Connecting to server...</h3>
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-<button onclick="loadPlayers()">🔄 REFRESH PLAYERS</button>
+import { OrbitControls } from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-<script>
+// SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 100, 230);
+
+// CAMERA
+const camera = new THREE.PerspectiveCamera(
+    55, window.innerWidth / window.innerHeight, 0.1, 500
+);
+camera.position.set(0, 65, 90);
+
+// RENDERER
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+// CAMERA CONTROLS
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI / 2.05;
+controls.minDistance = 25;
+controls.maxDistance = 150;
+
+// LIGHTS
+scene.add(new THREE.HemisphereLight(0xffffff, 0x42612d, 2));
+
+const sunlight = new THREE.DirectionalLight(0xffffff, 3);
+sunlight.position.set(-40, 70, 40);
+sunlight.castShadow = true;
+sunlight.shadow.mapSize.set(2048, 2048);
+scene.add(sunlight);
+
+// MATERIALS
+const grassMat = new THREE.MeshStandardMaterial({ color: 0x328b38 });
+const pitchMat = new THREE.MeshStandardMaterial({ color: 0xc7a477 });
+const lineMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+// GROUND
+const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(75, 100),
+    grassMat
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// GRASS STRIPES
+for (let i = -6; i <= 6; i++) {
+    const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(5, 0.03, 150),
+        new THREE.MeshStandardMaterial({
+            color: i % 2 === 0 ? 0x3d9841 : 0x348a38
+        })
+    );
+    stripe.position.set(i * 10, 0.02, 0);
+    scene.add(stripe);
+}
+
+// BOUNDARY
+const boundary = new THREE.Mesh(
+    new THREE.TorusGeometry(65, 0.35, 8, 150),
+    new THREE.MeshStandardMaterial({ color: 0xffffff })
+);
+boundary.rotation.x = Math.PI / 2;
+boundary.position.y = 0.3;
+scene.add(boundary);
+
+// PITCH
+const pitch = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 0.15, 35),
+    pitchMat
+);
+pitch.position.y = 0.1;
+pitch.receiveShadow = true;
+scene.add(pitch);
+
+// CREASE LINES
+function makeLine(x, z, width, depth) {
+    const line = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 0.08, depth),
+        lineMat
+    );
+    line.position.set(x, 0.23, z);
+    scene.add(line);
+}
+
+makeLine(0, -14, 10, 0.25);
+makeLine(0, 14, 10, 0.25);
+makeLine(0, -10, 0.25, 8);
+makeLine(0, 10, 0.25, 8);
+
+// STUMPS
+function makeStumps(z) {
+    for (let i = -1; i <= 1; i++) {
+        const stump = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.12, 0.12, 2.3, 12),
+            new THREE.MeshStandardMaterial({ color: 0xf5e6c8 })
+        );
+        stump.position.set(i * 0.55, 1.3, z);
+        stump.castShadow = true;
+        scene.add(stump);
+    }
+}
+makeStumps(-14);
+makeStumps(14);
+
+// STADIUM SEATING
+const seatColors = [0x164b91, 0x164b91, 0x185d9c];
+
+for (let row = 0; row < 5; row++) {
+    const seats = new THREE.Mesh(
+        new THREE.TorusGeometry(70 + row * 2, 1.4, 4, 150),
+        new THREE.MeshStandardMaterial({
+            color: seatColors[row % seatColors.length]
+        })
+    );
+    seats.rotation.x = Math.PI / 2;
+    seats.position.y = 3 + row * 2.2;
+    scene.add(seats);
+}
+
+// STADIUM LIGHT TOWERS
+for (const x of [-55, 55]) {
+    for (const z of [-55, 55]) {
+        const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.5, 0.8, 28, 12),
+            new THREE.MeshStandardMaterial({ color: 0x777777 })
+        );
+        pole.position.set(x, 14, z);
+        scene.add(pole);
+
+        const lamp = new THREE.Mesh(
+            new THREE.BoxGeometry(7, 2, 2),
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.4
+            })
+        );
+        lamp.position.set(x, 29, z);
+        scene.add(lamp);
+    }
+}
+
+// 3D HUMAN PLAYER
+function createPlayer(name, jerseyColor, x, z) {
+    const player = new THREE.Group();
+
+    const jersey = new THREE.MeshStandardMaterial({
+        color: jerseyColor,
+        roughness: 0.8
+    });
+
+    const skin = new THREE.MeshStandardMaterial({
+        color: 0xb87950
+    });
+
+    const trousers = new THREE.MeshStandardMaterial({
+        color: 0xeeeeee
+    });
+
+    const shoes = new THREE.MeshStandardMaterial({
+        color: 0x222222
+    });
+
+    // BODY
+    const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.65, 0.8, 2.2, 12),
+        jersey
+    );
+    body.position.y = 3.1;
+    body.castShadow = true;
+    player.add(body);
+
+    // HEAD
+    const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.62, 20, 20),
+        skin
+    );
+    head.position.y = 4.65;
+    head.castShadow = true;
+    player.add(head);
+
+    // CAP
+    const cap = new THREE.Mesh(
+        new THREE.SphereGeometry(0.66, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+        jersey
+    );
+    cap.position.y = 5.0;
+    player.add(cap);
+
+    // LEGS
+    for (const side of [-1, 1]) {
+        const leg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.24, 0.28, 1.8, 12),
+            trousers
+        );
+        leg.position.set(side * 0.35, 1.4, 0);
+        leg.castShadow = true;
+        player.add(leg);
+
+        const shoe = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 0.35, 0.85),
+            shoes
+        );
+        shoe.position.set(side * 0.35, 0.45, -0.15);
+        player.add(shoe);
+    }
+
+    // ARMS
+    for (const side of [-1, 1]) {
+        const arm = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.23, 1.8, 12),
+            jersey
+        );
+        arm.position.set(side * 0.88, 3.1, 0);
+        arm.rotation.z = side * -0.18;
+        arm.castShadow = true;
+        player.add(arm);
+
+        const hand = new THREE.Mesh(
+            new THREE.SphereGeometry(0.23, 12, 12),
+            skin
+        );
+        hand.position.set(side * 0.98, 2.15, 0);
+        player.add(hand);
+    }
+
+    // PLAYER NAME
+    player.userData.playerName = name;
+
+    player.position.set(x, 0, z);
+    scene.add(player);
+
+    return player;
+}
+
+// TEAM FORMATIONS
+const teamA = [];
+const teamB = [];
+
 const positionsA = [
-    [50, 12], [75, 20], [87, 40],
-    [85, 68], [70, 85], [50, 90],
-    [28, 85], [13, 68], [12, 40],
-    [27, 20], [50, 35]
+    [-4, 14], [0, -14], [-15, -20], [15, -20],
+    [-30, -10], [30, -10], [-35, 15], [35, 15],
+    [-20, 35], [20, 35], [0, 42]
 ];
 
 const positionsB = [
-    [43, 45], [57, 45], [43, 55],
-    [57, 55], [35, 35], [65, 35],
-    [35, 65], [65, 65], [50, 25],
-    [50, 75], [50, 50]
+    [4, -14], [0, -24], [-15, -30], [15, -30],
+    [-30, -20], [30, -20], [-40, 0], [40, 0],
+    [-25, 25], [25, 25], [0, 52]
 ];
 
-function createPlayer(player, index, position) {
-    const card = document.createElement("div");
+function addTeams(players = []) {
+    teamA.forEach(p => scene.remove(p));
+    teamB.forEach(p => scene.remove(p));
+    teamA.length = 0;
+    teamB.length = 0;
 
-    const human = player !== null;
+    for (let i = 0; i < 11; i++) {
+        const human = players[i];
+        const name = human ? human.name : `Team A Bot ${i + 1}`;
 
-    card.className = human ? "player human" : "player bot";
-
-    card.style.left = position[0] + "%";
-    card.style.top = position[1] + "%";
-
-    const img = document.createElement("img");
-
-    if (human) {
-        img.src = new URL(
-            player.photo,
-            window.location.origin
-        ).href;
-
-        img.alt = player.name;
-
-        img.onerror = function() {
-            img.src =
-                "https://placehold.co/100x100/005d32/ffffff?text=HUMAN";
-        };
-    } else {
-        img.src =
-            "https://placehold.co/100x100/555555/ffffff?text=BOT";
-        img.alt = "Bot";
-    }
-
-    const name = document.createElement("span");
-
-    name.className = "player-name";
-
-    name.textContent = human
-        ? player.name
-        : "Bot " + (index + 1);
-
-    card.appendChild(img);
-    card.appendChild(name);
-
-    return card;
-}
-
-async function loadPlayers() {
-
-    const teamA = document.getElementById("teamA");
-    const teamB = document.getElementById("teamB");
-
-    const status = document.getElementById("status");
-    const count = document.getElementById("playerCount");
-
-    status.textContent = "Loading players...";
-
-    try {
-
-        const response = await fetch(
-            "/players?time=" + Date.now(),
-            { cache: "no-store" }
+        teamA.push(
+            createPlayer(name, 0x164bdb,
+                positionsA[i][0], positionsA[i][1])
         );
 
-        if (!response.ok) {
-            throw new Error("Server error: " + response.status);
-        }
-
-        const data = await response.json();
-
-        const humans = (data.players || [])
-            .filter(p => p && p.name && p.photo)
-            .slice(0, 11);
-
-        teamA.replaceChildren();
-        teamB.replaceChildren();
-
-        // TEAM A: HUMANS FIRST, THEN BOTS
-
-        for (let i = 0; i < 11; i++) {
-
-            const player = humans[i] || null;
-
-            const card = createPlayer(
-                player,
-                i,
-                positionsA[i]
-            );
-
-            teamA.appendChild(card);
-        }
-
-        // TEAM B: 11 BOTS
-
-        for (let i = 0; i < 11; i++) {
-
-            const card = createPlayer(
-                null,
-                i,
-                positionsB[i]
-            );
-
-            teamB.appendChild(card);
-        }
-
-        count.textContent =
-            "Team A Humans: " + humans.length +
-            " | Team A Bots: " + (11 - humans.length) +
-            " | Team B Bots: 11";
-
-        status.textContent = humans.length > 0
-            ? "✅ Human players displayed successfully!"
-            : "No registered human players found.";
-
-    } catch (error) {
-
-        status.textContent =
-            "❌ Error loading players: " + error.message;
-
+        teamB.push(
+            createPlayer(`Team B Bot ${i + 1}`, 0xd62828,
+                positionsB[i][0], positionsB[i][1])
+        );
     }
+
+    document.getElementById("message").textContent =
+        `3D players loaded: ${teamA.length + teamB.length}`;
+}
+
+// LOAD REGISTERED PLAYERS
+async function loadPlayers() {
+    try {
+        const response = await fetch("/players?t=" + Date.now());
+        const data = await response.json();
+        addTeams(data.players || []);
+    } catch (error) {
+        console.error("Player loading error:", error);
+        addTeams([]);
+        document.getElementById("message").textContent =
+            "Showing 22 3D demo players";
+    }
+}
+
+// LIVE SCOREBOARD
+async function updateScore() {
+    try {
+        const response = await fetch("/match?t=" + Date.now());
+        const data = await response.json();
+        const match = data.match;
+
+        document.getElementById("score").textContent =
+            `${match.runs} / ${match.wickets}`;
+
+        document.getElementById("details").textContent =
+            `${match.batting_team} | Overs: ${match.overs}.${match.balls} | Extras: ${match.extras}`;
+    } catch (error) {
+        console.log("Score not available yet");
+    }
+}
+
+// ANIMATION
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const time = clock.getElapsedTime();
+
+    [...teamA, ...teamB].forEach((player, index) => {
+        player.rotation.y = Math.sin(time * 0.7 + index) * 0.04;
+    });
+
+    controls.update();
+    renderer.render(scene, camera);
 }
 
 loadPlayers();
+updateScore();
+
+setInterval(loadPlayers, 10000);
+setInterval(updateScore, 2000);
+
+animate();
+
+// RESIZE
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 </script>
 
 </body>
 </html>
-
